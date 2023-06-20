@@ -21,10 +21,14 @@ import MainListItems from './listItems';
 import {
   Button,
   FormControl,
+  FormControlLabel,
+  FormLabel,
   InputLabel,
   Menu,
   MenuItem,
   OutlinedInput,
+  Radio,
+  RadioGroup,
   Select,
   TextField,
 } from '@mui/material';
@@ -92,17 +96,24 @@ export default function Dashboard() {
   const [open, setOpen] = useState(true);
   const [auth, setAuth] = useState(true);
   const [anchorEl, setAnchorEl] = useState(null);
-  const [filterType, setFilterType] = useState('');
-  const [userData, setUserData] = useState('');
+  const [filterType, setFilterType] = useState('All');
+  const [userData, setUserData] = useState([]);
   const [searchUser, setSearchUser] = useState('');
   const { register, handleSubmit } = useForm();
+  const [filterByGender, setFilterByGender] = useState('All');
+  const [filterByCountry, setFilterByCountry] = useState('');
 
   const navigate = useNavigate();
 
   const getAllUsers = async () => {
     try {
-      const response = await getAllUsersFunc(searchUser);
+      const response = await getAllUsersFunc(
+        searchUser,
+        filterByGender,
+        filterByCountry
+      );
       if (response.status === 200) {
+        console.log(response);
         setUserData(response.data);
       }
     } catch (error) {
@@ -120,7 +131,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     getAllUsers();
-  }, [searchUser]);
+  }, [searchUser, filterByGender, filterByCountry]);
 
   const handleChange = (event) => {
     setAuth(event.target.checked);
@@ -132,6 +143,13 @@ export default function Dashboard() {
 
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  const handleFilterType = (e) => {
+    setFilterType(e.target.value);
+    if (e.target.value === 'All') {
+      setFilterByGender('All');
+    }
   };
 
   const toggleDrawer = () => {
@@ -255,7 +273,7 @@ export default function Dashboard() {
                       <FormControl fullWidth>
                         <TextField
                           id='outlined-controlled'
-                          label='Controlled'
+                          label='Search User by Name'
                           onChange={(event) => {
                             setSearchUser(event.target.value);
                           }}
@@ -269,7 +287,7 @@ export default function Dashboard() {
                       noValidate
                       autoComplete='off'
                     >
-                      <FormControl fullWidth>
+                      <FormControl fullWidth sx={{ marginBottom: 3 }}>
                         <InputLabel id='demo-simple-select-label'>
                           Filter by
                         </InputLabel>
@@ -277,22 +295,52 @@ export default function Dashboard() {
                           labelId='demo-simple-select-label'
                           id='demo-simple-select'
                           value={filterType}
-                          label='Search Users by'
-                          onChange={handleChange}
+                          label='Filter by'
+                          onChange={handleFilterType}
                         >
-                          <MenuItem value={10}>All users</MenuItem>
-                          <MenuItem value={10}>Gender</MenuItem>
-                          <MenuItem value={20}>Status</MenuItem>
-                          <MenuItem value={30}>Country</MenuItem>
+                          <MenuItem value={'All'}>All users</MenuItem>
+                          <MenuItem value={'Gender'}>Gender</MenuItem>
+                          <MenuItem value={'Country'}>Country</MenuItem>
                         </Select>
                       </FormControl>
+                      {filterType == 'Gender' ? (
+                        <FormControl sx={{ marginLeft: 1 }}>
+                          <FormLabel id='demo-radio-buttons-group-label'>
+                            Gender
+                          </FormLabel>
+                          <RadioGroup
+                            aria-labelledby='demo-radio-buttons-group-label'
+                            defaultValue='female'
+                            name='radio-buttons-group'
+                            onChange={(e) => setFilterByGender(e.target.value)}
+                          >
+                            <FormControlLabel
+                              value='Female'
+                              control={<Radio />}
+                              label='Female'
+                            />
+                            <FormControlLabel
+                              value='Male'
+                              control={<Radio />}
+                              label='Male'
+                            />
+                          </RadioGroup>
+                        </FormControl>
+                      ) : filterType === 'Country' ? (
+                        <FormControl fullWidth>
+                          <TextField
+                            id='outlined-controlled'
+                            label='Type Country Name'
+                            onChange={(event) => {
+                              setFilterByCountry(event.target.value);
+                            }}
+                          />
+                        </FormControl>
+                      ) : (
+                        ''
+                      )}
                     </Grid>
                   </Grid>
-                  <Box sx={{ marginTop: 5 }}>
-                    <Button variant='contained' color='success'>
-                      Export to CSV
-                    </Button>
-                  </Box>
                 </Paper>
               </Grid>
 

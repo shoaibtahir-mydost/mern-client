@@ -31,8 +31,8 @@ export default function Tables({ userData }) {
         </TableHead>
         <TableBody>
           {userData ? (
-            userData.map((row) => (
-              <TableRow key={row.id}>
+            userData.map((row, index) => (
+              <TableRow key={index}>
                 <TableCell>{row.name}</TableCell>
                 <TableCell>{row.age}</TableCell>
                 <TableCell>{row.gender}</TableCell>
