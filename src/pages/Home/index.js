@@ -354,9 +354,10 @@ export default function Dashboard() {
                   }}
                 >
                   <form onSubmit={handleSubmit(onSubmit)}>
-                    <Button variant='contained' width={'50%'}>
-                      <input type='file' {...register('file')} />
-                      <input type='submit' />
+                    <label for='file-upload' class='custom-file-upload'></label>
+                    <input id='file-upload' type='file' {...register('file')} />
+                    <Button type='submit' variant='contained' width={'50%'}>
+                      Upload
                     </Button>
                   </form>
                 </Paper>
