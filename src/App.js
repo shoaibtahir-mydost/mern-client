@@ -8,7 +8,8 @@ import { Routes, Route } from 'react-router-dom';
 function App() {
   return (
     <Routes>
-      <Route path='/' element={<Home />} />
+      <Route path='/user' element={<Profile />} />
+      <Route path='/admin' element={<Home />} />
       <Route path='/register' element={<Register />} />
       <Route path='/edit/:id' element={<EditProfile />} />
       <Route path='/profile/:id' element={<Profile />} />

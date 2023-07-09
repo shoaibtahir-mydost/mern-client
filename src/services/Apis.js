@@ -1,18 +1,34 @@
-import { commonRequest } from './ApiCall';
-import { BASE_URL } from './helper';
+import { commonRequest } from "./ApiCall";
+import { BASE_URL } from "./helper";
 
-const getAllUsersFunc = async (searchUser, gender, country) => {
+const getAllUsersFunc = async (
+  appNumber,
+  appYear,
+  appName,
+  title,
+  abstract
+) => {
+  console.log(
+    "appNumber",
+    appNumber,
+    "appYear",
+    appYear,
+    "appName",
+    appName,
+    title,
+    abstract
+  );
   return await commonRequest(
-    'GET',
-    `${BASE_URL}/getAllUsers?search=${searchUser}&gender=${gender}&country=${country}`,
-    ''
+    "GET",
+    `${BASE_URL}/getAllUsers?appNumber=${appNumber}&appYear=${appYear}&appName=${appName}&title=${title}&abstract=${abstract}`,
+    ""
   );
 };
 
 const uploadCSVFunc = async (formData) => {
-  const header = { 'Content-Type': 'multipart/form-data' };
+  const header = { "Content-Type": "multipart/form-data" };
   return await commonRequest(
-    'POST',
+    "POST",
     `${BASE_URL}/importUser`,
     formData,
     header

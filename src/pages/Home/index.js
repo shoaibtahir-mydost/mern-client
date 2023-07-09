@@ -1,25 +1,27 @@
-import { React, useEffect, useState } from 'react';
-import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
-import MuiDrawer from '@mui/material/Drawer';
-import Box from '@mui/material/Box';
-import MuiAppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
-import List from '@mui/material/List';
-import Typography from '@mui/material/Typography';
-import Divider from '@mui/material/Divider';
-import IconButton from '@mui/material/IconButton';
-import Badge from '@mui/material/Badge';
-import Container from '@mui/material/Container';
-import Grid from '@mui/material/Grid';
-import Paper from '@mui/material/Paper';
-import Link from '@mui/material/Link';
-import MenuIcon from '@mui/icons-material/Menu';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import NotificationsIcon from '@mui/icons-material/Notifications';
-import MainListItems from './listItems';
+import { React, useEffect, useState } from "react";
+import { styled, createTheme, ThemeProvider } from "@mui/material/styles";
+import CssBaseline from "@mui/material/CssBaseline";
+import MuiDrawer from "@mui/material/Drawer";
+import Box from "@mui/material/Box";
+import MuiAppBar from "@mui/material/AppBar";
+import Toolbar from "@mui/material/Toolbar";
+import List from "@mui/material/List";
+import Typography from "@mui/material/Typography";
+import Divider from "@mui/material/Divider";
+import IconButton from "@mui/material/IconButton";
+import Badge from "@mui/material/Badge";
+import Container from "@mui/material/Container";
+import Grid from "@mui/material/Grid";
+import Paper from "@mui/material/Paper";
+import Link from "@mui/material/Link";
+import MenuIcon from "@mui/icons-material/Menu";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import CloseIcon from "@mui/icons-material/Close";
+import MainListItems from "./listItems";
 import {
+  Alert,
   Button,
+  Collapse,
   FormControl,
   FormControlLabel,
   FormLabel,
@@ -30,14 +32,15 @@ import {
   Radio,
   RadioGroup,
   Select,
+  Snackbar,
   TextField,
-} from '@mui/material';
-import { AccountCircle } from '@mui/icons-material';
-import Tables from '../../components/Tables/Tables';
-import AddIcon from '@mui/icons-material/Add';
-import { useNavigate } from 'react-router-dom';
-import { getAllUsersFunc, uploadCSVFunc } from '../../services/Apis';
-import { useForm } from 'react-hook-form';
+} from "@mui/material";
+import { AccountCircle } from "@mui/icons-material";
+import Tables from "../../components/Tables/Tables";
+import AddIcon from "@mui/icons-material/Add";
+import { useNavigate } from "react-router-dom";
+import { getAllUsersFunc, uploadCSVFunc } from "../../services/Apis";
+import { useForm } from "react-hook-form";
 
 // import Chart from './Chart';
 // import Deposits from './Deposits';
@@ -46,17 +49,17 @@ import { useForm } from 'react-hook-form';
 const drawerWidth = 240;
 
 const AppBar = styled(MuiAppBar, {
-  shouldForwardProp: (prop) => prop !== 'open',
+  shouldForwardProp: (prop) => prop !== "open",
 })(({ theme, open }) => ({
   zIndex: theme.zIndex.drawer + 1,
-  transition: theme.transitions.create(['width', 'margin'], {
+  transition: theme.transitions.create(["width", "margin"], {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
   }),
   ...(open && {
     marginLeft: drawerWidth,
     width: `calc(100% - ${drawerWidth}px)`,
-    transition: theme.transitions.create(['width', 'margin'], {
+    transition: theme.transitions.create(["width", "margin"], {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
     }),
@@ -64,25 +67,25 @@ const AppBar = styled(MuiAppBar, {
 }));
 
 const Drawer = styled(MuiDrawer, {
-  shouldForwardProp: (prop) => prop !== 'open',
+  shouldForwardProp: (prop) => prop !== "open",
 })(({ theme, open }) => ({
-  '& .MuiDrawer-paper': {
-    position: 'relative',
-    whiteSpace: 'nowrap',
+  "& .MuiDrawer-paper": {
+    position: "relative",
+    whiteSpace: "nowrap",
     width: drawerWidth,
-    transition: theme.transitions.create('width', {
+    transition: theme.transitions.create("width", {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
     }),
-    boxSizing: 'border-box',
+    boxSizing: "border-box",
     ...(!open && {
-      overflowX: 'hidden',
-      transition: theme.transitions.create('width', {
+      overflowX: "hidden",
+      transition: theme.transitions.create("width", {
         easing: theme.transitions.easing.sharp,
         duration: theme.transitions.duration.leavingScreen,
       }),
       width: theme.spacing(7),
-      [theme.breakpoints.up('sm')]: {
+      [theme.breakpoints.up("sm")]: {
         width: theme.spacing(9),
       },
     }),
@@ -93,25 +96,22 @@ const Drawer = styled(MuiDrawer, {
 const defaultTheme = createTheme();
 
 export default function Dashboard() {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const [auth, setAuth] = useState(true);
   const [anchorEl, setAnchorEl] = useState(null);
-  const [filterType, setFilterType] = useState('All');
+  const [filterType, setFilterType] = useState("All");
   const [userData, setUserData] = useState([]);
-  const [searchUser, setSearchUser] = useState('');
+  const [searchUser, setSearchUser] = useState("");
   const { register, handleSubmit } = useForm();
-  const [filterByGender, setFilterByGender] = useState('All');
-  const [filterByCountry, setFilterByCountry] = useState('');
+  const [filterByGender, setFilterByGender] = useState("All");
+  const [filterByCountry, setFilterByCountry] = useState("");
+  const [snackbar, setSnackbar] = useState(false);
 
   const navigate = useNavigate();
 
   const getAllUsers = async () => {
     try {
-      const response = await getAllUsersFunc(
-        searchUser,
-        filterByGender,
-        filterByCountry
-      );
+      const response = await getAllUsersFunc("", "", "", "", "");
       if (response.status === 200) {
         console.log(response);
         setUserData(response.data);
@@ -123,18 +123,22 @@ export default function Dashboard() {
 
   const onSubmit = async (data) => {
     const formData = new FormData();
-    formData.append('file', data.file[0]);
+    formData.append("file", data.file[0]);
 
     const response = await uploadCSVFunc(formData);
-    console.log('file --->', response);
+    console.log(response);
+    if (response.data.status === 200) {
+      setSnackbar(true);
+      getAllUsers();
+    }
   };
 
   useEffect(() => {
     getAllUsers();
-  }, [searchUser, filterByGender, filterByCountry]);
+  }, []);
 
-  const handleChange = (event) => {
-    setAuth(event.target.checked);
+  const handleCloseSnackbar = (event, reason) => {
+    setSnackbar(false);
   };
 
   const handleMenu = (event) => {
@@ -147,8 +151,8 @@ export default function Dashboard() {
 
   const handleFilterType = (e) => {
     setFilterType(e.target.value);
-    if (e.target.value === 'All') {
-      setFilterByGender('All');
+    if (e.target.value === "All") {
+      setFilterByGender("All");
     }
   };
 
@@ -156,60 +160,84 @@ export default function Dashboard() {
     setOpen(!open);
   };
 
+  const action = (
+    <>
+      <Button color="secondary" size="small" onClick={handleCloseSnackbar}>
+        File Uploaded Successfully
+      </Button>
+      <IconButton
+        size="small"
+        aria-label="close"
+        color="inherit"
+        onClick={handleCloseSnackbar}
+      >
+        <CloseIcon fontSize="small" />
+      </IconButton>
+    </>
+  );
+
   return (
     <ThemeProvider theme={defaultTheme}>
-      <Box sx={{ display: 'flex' }}>
+      <Box sx={{ display: "flex" }}>
+        <Snackbar
+          open={open}
+          autoHideDuration={6000}
+          onClose={handleCloseSnackbar}
+          message="Note archived"
+          action={action}
+        />
+
         <CssBaseline />
-        <AppBar position='absolute' open={open}>
+        <AppBar position="absolute" open={open}>
           <Toolbar
             sx={{
-              pr: '24px', // keep right padding when drawer closed
+              pr: "24px", // keep right padding when drawer closed
             }}
           >
             <IconButton
-              edge='start'
-              color='inherit'
-              aria-label='open drawer'
+              edge="start"
+              color="inherit"
+              aria-label="open drawer"
               onClick={toggleDrawer}
               sx={{
-                marginRight: '36px',
-                ...(open && { display: 'none' }),
+                marginRight: "36px",
+                ...(open && { display: "none" }),
               }}
             >
               <MenuIcon />
             </IconButton>
             <Typography
-              component='h1'
-              variant='h6'
-              color='inherit'
+              component="h1"
+              variant="h6"
+              color="inherit"
               noWrap
               sx={{ flexGrow: 1 }}
             >
-              Dashboard
+              Patent Dashboard
             </Typography>
             {auth && (
               <div>
                 <IconButton
-                  size='large'
-                  aria-label='account of current user'
-                  aria-controls='menu-appbar'
-                  aria-haspopup='true'
+                  size="large"
+                  aria-label="account of current user"
+                  aria-controls="menu-appbar"
+                  aria-haspopup="true"
                   onClick={handleMenu}
-                  color='inherit'
+                  color="inherit"
                 >
                   <AccountCircle />
                 </IconButton>
                 <Menu
-                  id='menu-appbar'
+                  id="menu-appbar"
                   anchorEl={anchorEl}
                   anchorOrigin={{
-                    vertical: 'top',
-                    horizontal: 'right',
+                    vertical: "top",
+                    horizontal: "right",
                   }}
                   keepMounted
                   transformOrigin={{
-                    vertical: 'top',
-                    horizontal: 'right',
+                    vertical: "top",
+                    horizontal: "right",
                   }}
                   open={Boolean(anchorEl)}
                   onClose={handleClose}
@@ -221,12 +249,12 @@ export default function Dashboard() {
             )}
           </Toolbar>
         </AppBar>
-        <Drawer variant='permanent' open={open}>
+        <Drawer variant="permanent" open={open}>
           <Toolbar
             sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'flex-end',
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "flex-end",
               px: [1],
             }}
           >
@@ -235,45 +263,45 @@ export default function Dashboard() {
             </IconButton>
           </Toolbar>
           <Divider />
-          <List component='nav'>
+          <List component="nav">
             <MainListItems />
             <Divider sx={{ my: 1 }} />
           </List>
         </Drawer>
         <Box
-          component='main'
+          component="main"
           sx={{
             backgroundColor: (theme) =>
-              theme.palette.mode === 'light'
+              theme.palette.mode === "light"
                 ? theme.palette.grey[100]
                 : theme.palette.grey[900],
             flexGrow: 1,
-            height: '100vh',
-            overflow: 'auto',
+            height: "100vh",
+            overflow: "auto",
           }}
         >
           <Toolbar />
-          <Container maxWidth='lg' sx={{ mt: 4, mb: 4 }}>
+          <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
             <Grid container spacing={3}>
               {/* Chart */}
-              <Grid item xs={12} md={8} lg={9}>
+              {/* <Grid item xs={12} md={8} lg={9}>
                 <Paper
                   sx={{
                     p: 2,
-                    display: 'flex',
-                    flexDirection: 'column',
+                    display: "flex",
+                    flexDirection: "column",
                     height: 240,
                   }}
                 >
                   <Grid
                     container
-                    sx={{ display: 'flex', justifyContent: 'space-between' }}
+                    sx={{ display: "flex", justifyContent: "space-between" }}
                   >
-                    <Grid item xs={6} component='form' autoComplete='off'>
+                    <Grid item xs={6} component="form" autoComplete="off">
                       <FormControl fullWidth>
                         <TextField
-                          id='outlined-controlled'
-                          label='Search User by Name'
+                          id="outlined-controlled"
+                          label="Search User by Name"
                           onChange={(event) => {
                             setSearchUser(event.target.value);
                           }}
@@ -283,80 +311,80 @@ export default function Dashboard() {
                     <Grid
                       item
                       xs={4}
-                      component='form'
+                      component="form"
                       noValidate
-                      autoComplete='off'
+                      autoComplete="off"
                     >
                       <FormControl fullWidth sx={{ marginBottom: 3 }}>
-                        <InputLabel id='demo-simple-select-label'>
+                        <InputLabel id="demo-simple-select-label">
                           Filter by
                         </InputLabel>
                         <Select
-                          labelId='demo-simple-select-label'
-                          id='demo-simple-select'
+                          labelId="demo-simple-select-label"
+                          id="demo-simple-select"
                           value={filterType}
-                          label='Filter by'
+                          label="Filter by"
                           onChange={handleFilterType}
                         >
-                          <MenuItem value={'All'}>All users</MenuItem>
-                          <MenuItem value={'Gender'}>Gender</MenuItem>
-                          <MenuItem value={'Country'}>Country</MenuItem>
+                          <MenuItem value={"All"}>All users</MenuItem>
+                          <MenuItem value={"Gender"}>Gender</MenuItem>
+                          <MenuItem value={"Country"}>Country</MenuItem>
                         </Select>
                       </FormControl>
-                      {filterType == 'Gender' ? (
+                      {filterType == "Gender" ? (
                         <FormControl sx={{ marginLeft: 1 }}>
-                          <FormLabel id='demo-radio-buttons-group-label'>
+                          <FormLabel id="demo-radio-buttons-group-label">
                             Gender
                           </FormLabel>
                           <RadioGroup
-                            aria-labelledby='demo-radio-buttons-group-label'
-                            defaultValue='female'
-                            name='radio-buttons-group'
+                            aria-labelledby="demo-radio-buttons-group-label"
+                            defaultValue="female"
+                            name="radio-buttons-group"
                             onChange={(e) => setFilterByGender(e.target.value)}
                           >
                             <FormControlLabel
-                              value='Female'
+                              value="Female"
                               control={<Radio />}
-                              label='Female'
+                              label="Female"
                             />
                             <FormControlLabel
-                              value='Male'
+                              value="Male"
                               control={<Radio />}
-                              label='Male'
+                              label="Male"
                             />
                           </RadioGroup>
                         </FormControl>
-                      ) : filterType === 'Country' ? (
+                      ) : filterType === "Country" ? (
                         <FormControl fullWidth>
                           <TextField
-                            id='outlined-controlled'
-                            label='Type Country Name'
+                            id="outlined-controlled"
+                            label="Type Country Name"
                             onChange={(event) => {
                               setFilterByCountry(event.target.value);
                             }}
                           />
                         </FormControl>
                       ) : (
-                        ''
+                        ""
                       )}
                     </Grid>
                   </Grid>
                 </Paper>
-              </Grid>
+              </Grid> */}
 
-              <Grid item xs={12} md={4} lg={3}>
+              <Grid item xs={12}>
                 <Paper
                   sx={{
                     p: 2,
-                    display: 'flex',
-                    flexDirection: 'column',
+                    display: "flex",
+                    flexDirection: "column",
                     height: 240,
                   }}
                 >
                   <form onSubmit={handleSubmit(onSubmit)}>
-                    <label for='file-upload' class='custom-file-upload'></label>
-                    <input id='file-upload' type='file' {...register('file')} />
-                    <Button type='submit' variant='contained' width={'50%'}>
+                    <label for="file-upload" class="custom-file-upload"></label>
+                    <input id="file-upload" type="file" {...register("file")} />
+                    <Button type="submit" variant="contained" width={"50%"}>
                       Upload
                     </Button>
                   </form>
@@ -364,8 +392,8 @@ export default function Dashboard() {
               </Grid>
 
               <Grid item xs={12}>
-                <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
-                  <Tables userData={userData} />
+                <Paper sx={{ p: 2, display: "flex", flexDirection: "column" }}>
+                  <Tables userData={userData} showAction={true} />
                 </Paper>
               </Grid>
             </Grid>
