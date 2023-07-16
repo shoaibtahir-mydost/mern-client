@@ -20,7 +20,7 @@ const getAllUsersFunc = async (
   );
   return await commonRequest(
     "GET",
-    `${BASE_URL}/getAllUsers?appNumber=${appNumber}&appYear=${appYear}&appName=${appName}&title=${title}&abstract=${abstract}`,
+    `${BASE_URL}/getAllUsers?&appNumber=${appNumber}&appYear=${appYear}&appName=${appName}&title=${title}&abstract=${abstract}`,
     ""
   );
 };

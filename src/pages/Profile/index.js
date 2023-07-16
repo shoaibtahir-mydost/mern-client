@@ -41,6 +41,7 @@ import AddIcon from "@mui/icons-material/Add";
 import { useNavigate } from "react-router-dom";
 import { getAllUsersFunc, uploadCSVFunc } from "../../services/Apis";
 import { useForm } from "react-hook-form";
+import VirtualizedList from "../../components/List/List";
 
 // import Chart from './Chart';
 // import Deposits from './Deposits';
@@ -126,7 +127,6 @@ export default function Dashboard() {
       );
 
       if (response.status === 200) {
-        console.log(response);
         setUserData(response.data);
       }
     } catch (error) {
@@ -347,7 +347,7 @@ export default function Dashboard() {
                           value={searchType}
                           label="Search by"
                           onChange={handleSearchType}
-
+                          defaultValue={"appName"}
                           /*
                           Application number
                           2. Applicant name
@@ -380,7 +380,8 @@ export default function Dashboard() {
 
               <Grid item xs={12}>
                 <Paper sx={{ p: 2, display: "flex", flexDirection: "column" }}>
-                  <Tables userData={userData} showAction={true} />
+                  {/* <Tables userData={userData} showAction={true} /> */}
+                  <VirtualizedList userData={userData} />
                 </Paper>
               </Grid>
             </Grid>
